@@ -1,7 +1,9 @@
 package com.zipcode.stardust.controller;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -182,10 +184,16 @@ public class ForumController {
         Post p = opt.get();
         List<Comment> comments = commentRepository.findByPostOrderByPostdateAsc(p);
         List<Reaction> reactions = reactionRepository.findByPost(p);
+        Map<String, Integer> reactionCounts = new HashMap<>();
+        for(Reaction reaction : reactions) {
+            reactionCounts.put(reaction.getEmoji(), reactionCounts.getOrDefault(reaction.getEmoji(), 0) + 1);
+        }
+        System.out.println("REACTION COUNTS: " + reactionCounts);
         String breadcrumb = forumService.generateLinkPath(p.getSubforum().getId());
         model.addAttribute("post", p);
         model.addAttribute("comments", comments);
         model.addAttribute("reactions", reactions);
+        model.addAttribute("reactionCounts", reactionCounts);
         model.addAttribute("breadcrumb", breadcrumb);
         model.addAttribute("errors", new ArrayList<>());
         return "viewpost";
