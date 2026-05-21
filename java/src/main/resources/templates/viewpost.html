@@ -45,7 +45,7 @@
     <div th:each="comment : ${comments}" class="card mb-3">
     <div class="card-body">
 
-        <p th:utext="${@forumService.embedMedia(comment.content)}">
+        <p th:text="${comment.content}">
             Comment content
         </p>
 
@@ -88,6 +88,9 @@
 
                     <button type="submit" name="emoji" value="👍"
                             class="btn btn-outline-secondary btn-sm mr-1 mb-1">👍</button>
+
+                    <button type="submit" name="emoji" value="👎"
+                            class="btn btn-outline-secondary btn-sm mr-1 mb-1">👎</button>
 
                     <button type="submit" name="emoji" value="❤️"
                             class="btn btn-outline-secondary btn-sm mr-1 mb-1">❤️</button>
