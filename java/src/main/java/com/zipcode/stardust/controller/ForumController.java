@@ -184,16 +184,36 @@ public class ForumController {
         Post p = opt.get();
         List<Comment> comments = commentRepository.findByPostOrderByPostdateAsc(p);
         List<Reaction> reactions = reactionRepository.findByPost(p);
+        Map<Long, Map<String, Integer>> commentReactionCounts = new HashMap<>();
+        for (Comment comment : comments) {
+            List<Reaction> commentReactions =
+                    reactionRepository.findByComment(comment);
+            Map<String, Integer> counts =
+                    new HashMap<>();
+            for (Reaction reaction : commentReactions) {
+                counts.put(
+                        reaction.getEmoji(),
+                        counts.getOrDefault(
+                                reaction.getEmoji(),
+                                0
+                        ) + 1
+                );
+            }
+            commentReactionCounts.put(
+                    comment.getId(),
+                    counts
+            );
+        }
         Map<String, Integer> reactionCounts = new HashMap<>();
         for(Reaction reaction : reactions) {
             reactionCounts.put(reaction.getEmoji(), reactionCounts.getOrDefault(reaction.getEmoji(), 0) + 1);
         }
-        // System.out.println("REACTION COUNTS: " + reactionCounts);
         String breadcrumb = forumService.generateLinkPath(p.getSubforum().getId());
         model.addAttribute("post", p);
         model.addAttribute("comments", comments);
         model.addAttribute("reactions", reactions);
         model.addAttribute("reactionCounts", reactionCounts);
+        model.addAttribute("commentReactionCounts", commentReactionCounts);
         model.addAttribute("breadcrumb", breadcrumb);
         model.addAttribute("errors", new ArrayList<>());
         return "viewpost";
@@ -241,6 +261,43 @@ public class ForumController {
         return "redirect:/viewpost?post=" + post;
     }
 
+    @PostMapping("/action_comment_reaction")
+        public String addCommentReaction(@RequestParam Long comment,
+                                        @RequestParam String emoji,
+                                        Authentication auth) {
+            if (auth == null || !auth.isAuthenticated()) {
+                return "redirect:/loginform";
+            }
+            Optional<Comment> opt = commentRepository.findById(comment);
+            if (opt.isEmpty()) return "redirect:/";
+            User user = getCurrentUser(auth);
+            Comment currentComment = opt.get();
+            Optional<Reaction> existingReaction =
+                    reactionRepository.findByUserAndComment(
+                            user,
+                            currentComment
+                    );
+            if (existingReaction.isEmpty()) {
+                Reaction reaction =
+                        new Reaction(
+                                emoji,
+                                user,
+                                currentComment
+                        );
+                reactionRepository.save(reaction);
+            } else {
+                Reaction reaction =
+                        existingReaction.get();
+                if (reaction.getEmoji().equals(emoji)) {
+                    reactionRepository.delete(reaction);
+                } else {
+                    reaction.setEmoji(emoji);
+                    reactionRepository.save(reaction);
+                }
+            }
+            return "redirect:/viewpost?post=" +
+                    currentComment.getPost().getId();
+        }
     @GetMapping("/action_comment")
     public String addCommentGet(@RequestParam Long post) {
         return "redirect:/viewpost?post=" + post;

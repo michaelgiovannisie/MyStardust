@@ -29,12 +29,22 @@ public class Reaction {
     @JoinColumn(name = "post_id")
     private Post post;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "comment_id")
+    private Comment comment;
+
     public Reaction() {}
 
     public Reaction(String emoji, User user, Post post) {
         this.emoji = emoji;
         this.user = user;
         this.post = post;
+    }
+
+    public Reaction(String emoji, User user, Comment comment) {
+        this.emoji = emoji;
+        this.user = user;
+        this.comment = comment;
     }
 
     public Long getId() { return id; }
@@ -45,5 +55,7 @@ public class Reaction {
     public void setUser(User user) { this.user = user; }
     public Post getPost() { return post; }
     public void setPost(Post post) { this.post = post; }
+    public Comment getComment() { return comment; }
+    public void setComment(Comment comment) { this.comment = comment; }
 
 }

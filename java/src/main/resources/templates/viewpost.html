@@ -19,35 +19,99 @@
         <div class="card-body" th:text="${post.content}">Content here</div>
     </div>
     <div class="mb-4">
-        <div class="d-flex flex-wrap">
-            <span class="badge badge-pill badge-light mr-2 mb-2"
-                th:each="entry : ${reactionCounts.entrySet()}">
-                <span th:text="${entry.key}">👍</span>
-                <span th:text="${entry.value}">1</span>
-            </span>
-        </div>
-        <div sec:authorize="isAuthenticated()" class="mb-3">
-            <form th:action="@{/action_reaction(post=${post.id})}"
-                method="post"
-                class="d-flex flex-wrap gap-2">
-                <button type="submit" name="emoji" value="👍" class="btn btn-outline-secondary btn-sm">👍</button>
-                <button type="submit" name="emoji" value="👎" class="btn btn-outline-secondary btn-sm">👎</button>
-                <button type="submit" name="emoji" value="❤️" class="btn btn-outline-secondary btn-sm">❤️</button>
-                <button type="submit" name="emoji" value="😂" class="btn btn-outline-secondary btn-sm">😂</button>
-                <button type="submit" name="emoji" value="😮" class="btn btn-outline-secondary btn-sm">😮</button>
-                <button type="submit" name="emoji" value="😢" class="btn btn-outline-secondary btn-sm">😢</button>
-                <button type="submit" name="emoji" value="😡" class="btn btn-outline-secondary btn-sm">😡</button>
-            </form>
-        </div>
+    <div class="d-flex flex-wrap mb-2">
+        <span class="badge badge-pill badge-light mr-2 mb-2"
+              th:each="entry : ${reactionCounts.entrySet()}">
+            <span th:text="${entry.key}">👍</span>
+            <span th:text="${entry.value}">1</span>
+        </span>
     </div>
+
+    <div sec:authorize="isAuthenticated()" class="mb-3">
+        <form th:action="@{/action_reaction(post=${post.id})}"
+              method="post"
+              class="d-flex flex-wrap">
+            <button type="submit" name="emoji" value="👍" class="btn btn-outline-secondary btn-sm mr-2 mb-2">👍</button>
+            <button type="submit" name="emoji" value="👎" class="btn btn-outline-secondary btn-sm mr-2 mb-2">👎</button>
+            <button type="submit" name="emoji" value="❤️" class="btn btn-outline-secondary btn-sm mr-2 mb-2">❤️</button>
+            <button type="submit" name="emoji" value="😂" class="btn btn-outline-secondary btn-sm mr-2 mb-2">😂</button>
+            <button type="submit" name="emoji" value="😮" class="btn btn-outline-secondary btn-sm mr-2 mb-2">😮</button>
+            <button type="submit" name="emoji" value="😢" class="btn btn-outline-secondary btn-sm mr-2 mb-2">😢</button>
+            <button type="submit" name="emoji" value="😡" class="btn btn-outline-secondary btn-sm mr-2 mb-2">😡</button>
+        </form>
+    </div>
+</div>
     <h5>Comments (<span th:text="${#lists.size(comments)}">0</span>)</h5>
-    <div th:each="comment : ${comments}" class="comment-block">
-        <p th:text="${comment.content}">Comment content</p>
-        <small class="text-muted">
-            by <strong th:text="${comment.user.username}">author</strong>
-            &mdash; <span th:text="${comment.timeString}">time</span>
-        </small>
+    <div th:each="comment : ${comments}" class="card mb-3">
+    <div class="card-body">
+
+        <p th:utext="${@forumService.embedMedia(comment.content)}">
+            Comment content
+        </p>
+
+        <div class="d-flex justify-content-between align-items-center flex-wrap">
+
+            <small class="text-muted">
+
+                by
+                <a th:href="@{'/users/' + ${comment.user.username}}"
+                   th:text="${comment.user.username}"
+                   class="text-white font-weight-bold">
+                </a>
+
+                &mdash;
+                <span th:text="${comment.timeString}">
+                    time
+                </span>
+
+                <span class="ml-2"
+                      th:each="entry :
+                        ${commentReactionCounts.get(comment.id).entrySet()}">
+
+                    <span th:text="${entry.key}">
+                        👍
+                    </span>
+
+                    <span th:text="${entry.value}">
+                        1
+                    </span>
+
+                </span>
+
+            </small>
+
+            <div sec:authorize="isAuthenticated()">
+
+                <form th:action="@{/action_comment_reaction(comment=${comment.id})}"
+                      method="post"
+                      class="d-flex flex-wrap">
+
+                    <button type="submit" name="emoji" value="👍"
+                            class="btn btn-outline-secondary btn-sm mr-1 mb-1">👍</button>
+
+                    <button type="submit" name="emoji" value="❤️"
+                            class="btn btn-outline-secondary btn-sm mr-1 mb-1">❤️</button>
+
+                    <button type="submit" name="emoji" value="😂"
+                            class="btn btn-outline-secondary btn-sm mr-1 mb-1">😂</button>
+
+                    <button type="submit" name="emoji" value="😮"
+                            class="btn btn-outline-secondary btn-sm mr-1 mb-1">😮</button>
+
+                    <button type="submit" name="emoji" value="😢"
+                            class="btn btn-outline-secondary btn-sm mr-1 mb-1">😢</button>
+
+                    <button type="submit" name="emoji" value="😡"
+                            class="btn btn-outline-secondary btn-sm mr-1 mb-1">😡</button>
+
+                </form>
+
+            </div>
+
+        </div>
+
     </div>
+</div>
     <div th:if="${comments.isEmpty()}" class="text-muted">No comments yet.</div>
     <div sec:authorize="isAuthenticated()" class="mt-4">
         <h5>Add a Comment</h5>
@@ -65,3 +129,5 @@
 </div>
 </body>
 </html>
+
+

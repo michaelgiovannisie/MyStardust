@@ -37,7 +37,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/subforum", "/loginform", "/viewpost", "/action_login",
                         "/action_createaccount", "/static/**", "/style.css").permitAll()
-                .requestMatchers("/addpost", "/action_post", "/action_comment", "/action_reaction")
+                .requestMatchers("/addpost", "/action_post", "/action_comment", "/action_reaction", "/action_comment_reaction")
                         .authenticated()
                 .anyRequest().permitAll()
             )

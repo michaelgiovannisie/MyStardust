@@ -2,6 +2,8 @@ package com.zipcode.stardust.model;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,6 +13,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 
@@ -35,6 +38,9 @@ public class Comment {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")
     private Post post;
+
+    @OneToMany(mappedBy = "comment", fetch = FetchType.LAZY)
+    private List<Reaction> reactions = new ArrayList<>();
 
     private static final int DAYS_PER_MONTH = 30;
     private static final long CACHE_TTL_SECONDS = 30;
@@ -90,4 +96,6 @@ public class Comment {
     public void setUser(User user) { this.user = user; }
     public Post getPost() { return post; }
     public void setPost(Post post) { this.post = post; }
+    public List<Reaction> getReactions() { return reactions; }
+    public void setReactions(List<Reaction> reactions) { this.reactions = reactions; }
 }
