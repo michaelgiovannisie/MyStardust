@@ -188,7 +188,7 @@ public class ForumController {
         for(Reaction reaction : reactions) {
             reactionCounts.put(reaction.getEmoji(), reactionCounts.getOrDefault(reaction.getEmoji(), 0) + 1);
         }
-        System.out.println("REACTION COUNTS: " + reactionCounts);
+        // System.out.println("REACTION COUNTS: " + reactionCounts);
         String breadcrumb = forumService.generateLinkPath(p.getSubforum().getId());
         model.addAttribute("post", p);
         model.addAttribute("comments", comments);
