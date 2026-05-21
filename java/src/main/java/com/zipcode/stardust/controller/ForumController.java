@@ -1,19 +1,30 @@
 package com.zipcode.stardust.controller;
 
-import com.zipcode.stardust.model.*;
-import com.zipcode.stardust.repository.*;
-import com.zipcode.stardust.service.ForumService;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import com.zipcode.stardust.model.Comment;
+import com.zipcode.stardust.model.Post;
+import com.zipcode.stardust.model.Reaction;
+import com.zipcode.stardust.model.Subforum;
+import com.zipcode.stardust.model.User;
+import com.zipcode.stardust.repository.CommentRepository;
+import com.zipcode.stardust.repository.PostRepository;
+import com.zipcode.stardust.repository.ReactionRepository;
+import com.zipcode.stardust.repository.SubforumRepository;
+import com.zipcode.stardust.repository.UserRepository;
+import com.zipcode.stardust.service.ForumService;
 
 @Controller
 public class ForumController {
@@ -21,6 +32,7 @@ public class ForumController {
     @Autowired private SubforumRepository subforumRepository;
     @Autowired private PostRepository postRepository;
     @Autowired private CommentRepository commentRepository;
+    @Autowired private ReactionRepository reactionRepository;
     @Autowired private UserRepository userRepository;
     @Autowired private PasswordEncoder passwordEncoder;
     @Autowired private ForumService forumService;
@@ -169,9 +181,11 @@ public class ForumController {
         if (opt.isEmpty()) return "redirect:/";
         Post p = opt.get();
         List<Comment> comments = commentRepository.findByPostOrderByPostdateAsc(p);
+        List<Reaction> reactions = reactionRepository.findByPost(p);
         String breadcrumb = forumService.generateLinkPath(p.getSubforum().getId());
         model.addAttribute("post", p);
         model.addAttribute("comments", comments);
+        model.addAttribute("reactions", reactions);
         model.addAttribute("breadcrumb", breadcrumb);
         model.addAttribute("errors", new ArrayList<>());
         return "viewpost";
@@ -189,6 +203,33 @@ public class ForumController {
         User user = getCurrentUser(auth);
         Comment comment = new Comment(content, user, opt.get());
         commentRepository.save(comment);
+        return "redirect:/viewpost?post=" + post;
+    }
+
+    @PostMapping("/action_reaction")
+    public String addReaction(@RequestParam Long post,
+                                @RequestParam String emoji,
+                                Authentication auth) {
+        if (auth == null || !auth.isAuthenticated()) {
+            return "redirect:/loginform";
+        }
+        Optional<Post> opt = postRepository.findById(post);
+        if (opt.isEmpty()) return "redirect:/";
+        User user = getCurrentUser(auth);
+        Post currentPost = opt.get();
+        Optional<Reaction> existingReaction = reactionRepository.findByUserAndPost(user, currentPost);
+        if(existingReaction.isEmpty()) {
+            Reaction reaction = new Reaction(emoji, user, opt.get());
+            reactionRepository.save(reaction);
+        } else {
+            Reaction reaction = existingReaction.get();
+            if(reaction.getEmoji().equals(emoji)) {
+            reactionRepository.delete(reaction);
+            } else {
+                reaction.setEmoji(emoji);
+                reactionRepository.save(reaction);
+            }
+        }
         return "redirect:/viewpost?post=" + post;
     }
 

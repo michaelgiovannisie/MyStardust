@@ -44,6 +44,9 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<Comment> comments = new ArrayList<>();
 
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<Reaction> reactions = new ArrayList<>();
+
     public User() {}
 
     public User(String email, String username, String rawPassword, PasswordEncoder encoder) {
@@ -102,4 +105,6 @@ public class User implements UserDetails {
     public void setPosts(List<Post> posts) { this.posts = posts; }
     public List<Comment> getComments() { return comments; }
     public void setComments(List<Comment> comments) { this.comments = comments; }
+    public List<Reaction> getReactions() { return reactions; }
+    public void setReactions(List<Reaction> reactions) { this.reactions = reactions; }
 }
